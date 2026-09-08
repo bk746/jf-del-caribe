@@ -1,54 +1,30 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
-import Lenis from "lenis";
-import { ensureGsapScroll, gsap, ScrollTrigger } from "@/lib/gsap-client";
-import { prefersReducedMotion } from "@/lib/motion";
+import { useEffect, useLayoutEffect, type ReactNode } from "react";
+import { ensureGsapScroll, ScrollTrigger } from "@/lib/gsap-client";
 import { markScrollSystemReady } from "@/lib/scroll-ready";
 import {
   clearScrollHashFromUrl,
   isPageReload,
   resetScrollToTop,
-  SCROLL_ANCHOR_OFFSET,
   scrollToHashElement,
   shouldStartAtTopOnLoad,
 } from "@/lib/scroll";
-import "lenis/dist/lenis.css";
 
-function scrollLenisToTop(lenis: Lenis) {
-  lenis.scrollTo(0, { immediate: true, force: true });
-}
-
-function scrollLenisToHash(lenis: Lenis, hash: string, immediate = false) {
-  lenis.scrollTo(hash, {
-    offset: SCROLL_ANCHOR_OFFSET,
-    immediate,
-    force: true,
-  });
-}
-
-function applyInitialScroll(lenis?: Lenis | null) {
+function applyInitialScroll() {
   if (shouldStartAtTopOnLoad()) {
     if (isPageReload()) clearScrollHashFromUrl();
     resetScrollToTop();
-    if (lenis) scrollLenisToTop(lenis);
     return;
   }
 
-  const hash = window.location.hash;
-  if (lenis) {
-    scrollLenisToHash(lenis, hash, true);
-  } else {
-    scrollToHashElement(hash, { immediate: true });
-  }
+  scrollToHashElement(window.location.hash, { immediate: true });
 }
 
-function lockScrollAtTop(lenis?: Lenis | null) {
+function lockScrollAtTop() {
   if (!shouldStartAtTopOnLoad()) return;
-
   resetScrollToTop();
-  if (lenis) scrollLenisToTop(lenis);
 }
 
 function notifyScrollReady() {
@@ -57,59 +33,14 @@ function notifyScrollReady() {
 
 export default function SmoothScroll({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const lenisRef = useRef<Lenis | null>(null);
 
   useLayoutEffect(() => {
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
 
-    lockScrollAtTop();
-
-    if (prefersReducedMotion()) {
-      applyInitialScroll();
-      requestAnimationFrame(notifyScrollReady);
-      return;
-    }
-
     ensureGsapScroll();
-
-    const lenis = new Lenis({
-      lerp: 0.1,
-      smoothWheel: true,
-      syncTouch: false,
-      wheelMultiplier: 0.9,
-    });
-
-    lenisRef.current = lenis;
-
-    ScrollTrigger.defaults({ scroller: document.documentElement });
-
-    ScrollTrigger.scrollerProxy(document.documentElement, {
-      scrollTop(value) {
-        if (arguments.length && value !== undefined) {
-          lenis.scrollTo(value, { immediate: true, force: true });
-        }
-        return lenis.scroll;
-      },
-      getBoundingClientRect() {
-        return {
-          top: 0,
-          left: 0,
-          width: window.innerWidth,
-          height: window.innerHeight,
-        };
-      },
-    });
-
-    lenis.on("scroll", ScrollTrigger.update);
-
-    const onTick = (time: number) => {
-      lenis.raf(time * 1000);
-    };
-
-    gsap.ticker.add(onTick);
-    gsap.ticker.lagSmoothing(0);
+    lockScrollAtTop();
 
     let refreshTimer: number | undefined;
     const scheduleRefresh = () => {
@@ -122,24 +53,24 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     const onHashChange = () => {
       const hash = window.location.hash;
       if (!hash) {
-        if (shouldStartAtTopOnLoad()) lockScrollAtTop(lenis);
+        if (shouldStartAtTopOnLoad()) lockScrollAtTop();
         return;
       }
-      scrollLenisToHash(lenis, hash);
+      scrollToHashElement(hash);
     };
 
     const onPageShow = () => {
-      applyInitialScroll(lenis);
+      applyInitialScroll();
     };
 
     window.addEventListener("resize", scheduleRefresh, { passive: true });
     window.addEventListener("hashchange", onHashChange);
     window.addEventListener("pageshow", onPageShow);
 
-    applyInitialScroll(lenis);
+    applyInitialScroll();
 
     requestAnimationFrame(() => {
-      lockScrollAtTop(lenis);
+      lockScrollAtTop();
       ScrollTrigger.refresh();
       notifyScrollReady();
     });
@@ -149,15 +80,12 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       window.removeEventListener("hashchange", onHashChange);
       window.removeEventListener("pageshow", onPageShow);
       window.clearTimeout(refreshTimer);
-      gsap.ticker.remove(onTick);
-      lenis.destroy();
-      lenisRef.current = null;
     };
   }, []);
 
   useEffect(() => {
     if (shouldStartAtTopOnLoad()) {
-      lockScrollAtTop(lenisRef.current);
+      lockScrollAtTop();
       requestAnimationFrame(() => {
         ScrollTrigger.refresh();
         notifyScrollReady();
@@ -166,22 +94,11 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     }
 
     const hash = window.location.hash;
-
-    if (prefersReducedMotion()) {
-      const timer = window.setTimeout(() => {
-        scrollToHashElement(hash, { immediate: true });
-      }, 50);
-      return () => window.clearTimeout(timer);
-    }
-
-    const lenis = lenisRef.current;
-    if (!lenis) return;
-
     const timer = window.setTimeout(() => {
-      scrollLenisToHash(lenis, hash);
+      scrollToHashElement(hash, { immediate: true });
       ScrollTrigger.refresh();
       notifyScrollReady();
-    }, 80);
+    }, 50);
 
     return () => window.clearTimeout(timer);
   }, [pathname]);
