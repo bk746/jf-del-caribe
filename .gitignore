@@ -40,6 +40,9 @@ yarn-error.log*
 .cursor/
 .tmp-shots/
 
+# source duplicates (served from public/)
+src/video/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

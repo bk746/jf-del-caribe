@@ -9,10 +9,12 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import MenuMaterialsCarousel from "@/components/sections/MenuMaterialsCarousel";
 import { PRIMARY_NAV } from "@/lib/navigation";
 import logoJfCaribe from "@/src/images/logo-jf-caribe.png";
+import menuPoster from "@/src/images/hero-poster-source.jpeg";
 
 type HeroMenuOverlayProps = {
   isOpen: boolean;
   onClose: () => void;
+  onClosed?: () => void;
 };
 
 function ArrowIcon({ className = "" }: { className?: string }) {
@@ -35,6 +37,7 @@ function ArrowIcon({ className = "" }: { className?: string }) {
 export default function HeroMenuOverlay({
   isOpen,
   onClose,
+  onClosed,
 }: HeroMenuOverlayProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [isRendered, setIsRendered] = useState(false);
@@ -86,6 +89,7 @@ export default function HeroMenuOverlay({
     if (reduceMotion) {
       gsap.set(panel, { yPercent: -100 });
       setIsRendered(false);
+      onClosed?.();
       return;
     }
 
@@ -93,9 +97,12 @@ export default function HeroMenuOverlay({
       yPercent: -100,
       duration: 0.55,
       ease: "power3.inOut",
-      onComplete: () => setIsRendered(false),
+      onComplete: () => {
+        setIsRendered(false);
+        onClosed?.();
+      },
     });
-  }, [isOpen, isRendered, reduceMotion]);
+  }, [isOpen, isRendered, onClosed, reduceMotion]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -129,9 +136,10 @@ export default function HeroMenuOverlay({
         <Image
           src={logoJfCaribe}
           alt=""
+          width={320}
+          height={320}
           className="h-full w-full object-contain object-center"
           sizes="80px"
-          priority
         />
       </Link>
 
@@ -182,11 +190,12 @@ export default function HeroMenuOverlay({
             data-menu-item
           >
             <Image
-              src="/video/hero-poster.jpg"
+              src={menuPoster}
               alt="Obra JF Caribe en la Riviera Maya"
               fill
               className="object-cover"
               sizes="22rem"
+              loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 

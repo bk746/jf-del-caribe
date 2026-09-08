@@ -197,7 +197,6 @@ export default function HeroSection() {
               alt=""
               width={LOGO_NATURAL_WIDTH}
               height={LOGO_NATURAL_HEIGHT}
-              priority
               sizes="(max-width: 1023px) 105px, 123px"
               className="block h-[86px] w-auto object-contain object-left lg:h-[100px]"
             />

@@ -105,8 +105,8 @@ async function buildCutouts() {
           top: Math.round((CANVAS_HEIGHT - subjectHeight) / 2),
         },
       ])
-      .png({ compressionLevel: 9 })
-      .toFile(path.join(OUTPUT_DIR, output));
+      .webp({ quality: 86, effort: 6 })
+      .toFile(path.join(OUTPUT_DIR, output.replace(/\.png$/, ".webp")));
 
     console.log(
       `${output.padEnd(20)} bbox ${bounds.width}x${bounds.height} → rogné ${crop.width}x${crop.height} → sujet ${subjectWidth}x${subjectHeight}`,

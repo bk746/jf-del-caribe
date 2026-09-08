@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Material } from "@/lib/products";
 import ArrowIcon from "@/components/sections/ArrowIcon";
-import GsapHoverCard from "@/components/sections/GsapHoverCard";
+import HoverCard from "@/components/sections/HoverCard";
 
 type ProductCardProps = {
   material: Material;
@@ -18,7 +18,7 @@ export default function ProductCard({
   const imageScale = material.imageKind === "cover" ? 1.07 : 1.05;
 
   return (
-    <GsapHoverCard
+    <HoverCard
       imageScale={imageScale}
       className="group relative flex w-full flex-col rounded-[20px] bg-white sm:rounded-[24px]"
     >
@@ -51,8 +51,8 @@ export default function ProductCard({
           fill
           className={
             material.imageKind === "cover"
-              ? "object-cover object-center will-change-transform"
-              : "object-contain object-center will-change-transform"
+              ? "object-cover object-center"
+              : "object-contain object-center"
           }
           sizes="(max-width: 640px) 88vw, (max-width: 1024px) 44vw, 30vw"
         />
@@ -73,7 +73,7 @@ export default function ProductCard({
 
           <span
             data-card-arrow
-            className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f4f2ed] text-[#171717] will-change-transform"
+            className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f4f2ed] text-[#171717]"
             aria-hidden
           >
             <ArrowIcon />
@@ -93,6 +93,6 @@ export default function ProductCard({
           </dl>
         )}
       </div>
-    </GsapHoverCard>
+    </HoverCard>
   );
 }

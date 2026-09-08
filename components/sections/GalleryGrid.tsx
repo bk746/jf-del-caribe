@@ -76,7 +76,6 @@ export default function GalleryGrid({ items }: GalleryGridProps) {
           >
             <GalleryTile
               item={item}
-              priority={index < 2}
               sizes={index === 0 ? "100vw" : "50vw"}
             />
           </div>
@@ -102,7 +101,6 @@ export default function GalleryGrid({ items }: GalleryGridProps) {
           >
             <GalleryTile
               item={item}
-              priority={index < 2}
               sizes={
                 index === 0
                   ? "(max-width: 1280px) 66vw, 42vw"

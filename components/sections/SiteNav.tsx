@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -9,9 +10,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import HeroMenuOverlay from "@/components/sections/HeroMenuOverlay";
 import HeroNav from "@/components/sections/HeroNav";
 import heroLogo from "@/src/images/hero-logo.jpg";
+
+const HeroMenuOverlay = dynamic(
+  () => import("@/components/sections/HeroMenuOverlay"),
+  { ssr: false },
+);
 
 type MenuContextValue = {
   menuOpen: boolean;
@@ -43,6 +48,7 @@ function getScrollTop() {
 export function SiteNavProvider({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [overlayMounted, setOverlayMounted] = useState(false);
 
   useEffect(() => {
     let lastScrolled = false;
@@ -68,6 +74,10 @@ export function SiteNavProvider({ children }: { children: ReactNode }) {
     return () => {
       document.body.style.overflow = "";
     };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (menuOpen) setOverlayMounted(true);
   }, [menuOpen]);
 
   const toggleMenu = () => setMenuOpen((open) => !open);
@@ -115,10 +125,13 @@ export function SiteNavProvider({ children }: { children: ReactNode }) {
         />
       </div>
 
-      <HeroMenuOverlay
-        isOpen={menuOpen}
-        onClose={() => setMenuOpen(false)}
-      />
+      {overlayMounted ? (
+        <HeroMenuOverlay
+          isOpen={menuOpen}
+          onClose={() => setMenuOpen(false)}
+          onClosed={() => setOverlayMounted(false)}
+        />
+      ) : null}
     </MenuContext.Provider>
   );
 }

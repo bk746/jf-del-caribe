@@ -1,9 +1,9 @@
 import type { StaticImageData } from "next/image";
-import cemantanteImg from "@/src/images/materials/cemantante.png";
-import gravaMixtaImg from "@/src/images/materials/grava-mixta.png";
-import gravillaImg from "@/src/images/materials/gravilla.png";
+import cemantanteImg from "@/src/images/materials/cemantante.webp";
+import gravaMixtaImg from "@/src/images/materials/grava-mixta.webp";
+import gravillaImg from "@/src/images/materials/gravilla.webp";
 import piedrasImg from "@/src/images/materials/piedras-mamposteria.webp";
-import polvoImg from "@/src/images/materials/polvo.png";
+import polvoImg from "@/src/images/materials/polvo.webp";
 import truckImg from "@/src/images/materials/livraison-camion.webp";
 import tierraNegraImg from "@/src/images/6908f1b99bf7a90405d25eaf_66f4656892574f3240ff9572_Compost.webp";
 

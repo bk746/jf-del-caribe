@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import ArrowIcon from "@/components/sections/ArrowIcon";
-import GsapHoverCard from "@/components/sections/GsapHoverCard";
+import HoverCard from "@/components/sections/HoverCard";
 import type { Service } from "@/lib/services";
 
 type ServiceCardProps = {
@@ -15,7 +15,7 @@ export default function ServiceCard({
   stagger = false,
 }: ServiceCardProps) {
   return (
-    <GsapHoverCard
+    <HoverCard
       imageScale={1.06}
       className={`relative flex w-full flex-col overflow-hidden rounded-[20px] bg-white sm:rounded-[24px] ${stagger ? "lg:mt-8" : ""}`}
     >
@@ -27,7 +27,7 @@ export default function ServiceCard({
           src={service.image}
           alt={service.imageAlt}
           fill
-          className="object-cover object-center will-change-transform"
+          className="object-cover object-center"
           sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 31vw"
         />
       </div>
@@ -47,7 +47,7 @@ export default function ServiceCard({
 
           <span
             data-card-arrow
-            className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f4f2ed] text-[#171717] will-change-transform"
+            className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f4f2ed] text-[#171717]"
             aria-hidden
           >
             <ArrowIcon />
@@ -58,6 +58,6 @@ export default function ServiceCard({
           {service.description}
         </p>
       </div>
-    </GsapHoverCard>
+    </HoverCard>
   );
 }

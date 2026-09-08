@@ -11,6 +11,8 @@ type HeroBackgroundMediaProps = {
   playbackPaused?: boolean;
 };
 
+const VIDEO_LOAD_DELAY_MS = 1800;
+
 export default function HeroBackgroundMedia({
   poster,
   videoSrc,
@@ -19,9 +21,24 @@ export default function HeroBackgroundMedia({
 }: HeroBackgroundMediaProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoReady, setVideoReady] = useState(false);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
 
   useEffect(() => {
     if (!enableVideo) return;
+
+    const loadVideo = () => setShouldLoadVideo(true);
+
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(loadVideo, { timeout: 3000 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timer = setTimeout(loadVideo, VIDEO_LOAD_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [enableVideo]);
+
+  useEffect(() => {
+    if (!enableVideo || !shouldLoadVideo) return;
 
     const video = videoRef.current;
     if (!video) return;
@@ -37,7 +54,7 @@ export default function HeroBackgroundMedia({
     syncPlayback();
     document.addEventListener("visibilitychange", syncPlayback);
     return () => document.removeEventListener("visibilitychange", syncPlayback);
-  }, [enableVideo, playbackPaused]);
+  }, [enableVideo, playbackPaused, shouldLoadVideo]);
 
   return (
     <div className="relative h-full w-full bg-[#1a1a1a]">
@@ -51,14 +68,14 @@ export default function HeroBackgroundMedia({
         aria-hidden
       />
 
-      {enableVideo ? (
+      {enableVideo && shouldLoadVideo ? (
         <video
           ref={videoRef}
           autoPlay
           muted
           loop
           playsInline
-          preload="auto"
+          preload="none"
           poster={poster.src}
           onCanPlay={() => setVideoReady(true)}
           onPlaying={() => setVideoReady(true)}

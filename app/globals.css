@@ -11,15 +11,8 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--color-primary);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --breakpoint-xs: 30rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #ffffff;
-    --foreground: #171717;
-  }
 }
 
 body {
@@ -33,6 +26,57 @@ html {
 
 [data-hero-frame] {
   contain: layout paint;
+}
+
+[data-reveal],
+[data-reveal-item],
+[data-reveal-fade] {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.hover-card {
+  --hover-scale: 1.05;
+  box-shadow: 0 8px 30px -14px rgba(23, 23, 23, 0.2);
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hover-card [data-card-media] img,
+.hover-card [data-card-media] [data-card-media-target] {
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hover-card [data-card-arrow] {
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) {
+  .hover-card:hover,
+  .hover-card:focus-within {
+    transform: translateY(-8px);
+    box-shadow: 0 22px 50px -18px rgba(23, 23, 23, 0.28);
+  }
+
+  .hover-card:hover [data-card-media] img,
+  .hover-card:hover [data-card-media] [data-card-media-target],
+  .hover-card:focus-within [data-card-media] img,
+  .hover-card:focus-within [data-card-media] [data-card-media-target] {
+    transform: scale(var(--hover-scale));
+  }
+
+  .hover-card:hover [data-card-arrow],
+  .hover-card:focus-within [data-card-arrow] {
+    transform: translateX(5px);
+    background-color: #f97316;
+    color: #ffffff;
+    box-shadow: 0 4px 14px -4px rgba(234, 88, 12, 0.45);
+  }
 }
 
 @keyframes chevron-bounce {
