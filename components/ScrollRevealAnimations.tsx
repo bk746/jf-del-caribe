@@ -1,135 +1,97 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useLayoutEffect } from "react";
+import { useEffect } from "react";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import {
-  ensureGsapScroll,
-  getScrollTriggerConfig,
-  gsap,
-  ScrollTrigger,
-} from "@/lib/gsap-client";
-import { isScrollSystemReady } from "@/lib/scroll-ready";
 
-function primeHiddenState() {
-  gsap.set("[data-reveal], [data-reveal-item], [data-reveal-fade]", {
-    opacity: 0,
-    y: 14,
+const REVEAL_SELECTORS =
+  "[data-reveal]:not([data-reveal-item]), [data-reveal-fade], [data-conversion-section]";
+
+function revealAll(nodes: NodeListOf<Element>) {
+  nodes.forEach((node) => node.classList.add("is-revealed"));
+}
+
+function setupHeroReveals() {
+  document.querySelectorAll<HTMLElement>("[data-reveal-hero]").forEach((hero) => {
+    Array.from(hero.children).forEach((child, index) => {
+      (child as HTMLElement).style.setProperty(
+        "--reveal-delay",
+        `${80 + index * 70}ms`,
+      );
+    });
+    hero.classList.add("is-revealed");
   });
 }
 
-function createRevealAnimations() {
-  return gsap.context(() => {
-    primeHiddenState();
-
-    gsap.utils.toArray<HTMLElement>("[data-reveal-hero]").forEach((el) => {
-      const children = Array.from(el.children);
-      const targets = children.length ? children : [el];
-
-      gsap.fromTo(
-        targets,
-        { opacity: 0, y: 18 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.95,
-          stagger: 0.07,
-          ease: "power2.out",
-          delay: 0.08,
+function setupStaggerDelays() {
+  document.querySelectorAll<HTMLElement>("[data-reveal-stagger]").forEach(
+    (container) => {
+      container.querySelectorAll<HTMLElement>("[data-reveal-item]").forEach(
+        (item, index) => {
+          item.style.setProperty("--reveal-delay", `${index * 60}ms`);
         },
       );
-    });
+    },
+  );
 
-    gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {
-      gsap.fromTo(
-        el,
-        { opacity: 0, y: 20 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.9,
-          ease: "power2.out",
-          immediateRender: false,
-          scrollTrigger: getScrollTriggerConfig(el, "top 90%"),
-        },
-      );
-    });
-
-    gsap.utils.toArray<HTMLElement>("[data-reveal-stagger]").forEach(
-      (container) => {
-        const items = container.querySelectorAll("[data-reveal-item]");
-        if (!items.length) return;
-
-        gsap.fromTo(
-          items,
-          { opacity: 0, y: 16 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            stagger: 0.06,
-            ease: "power2.out",
-            immediateRender: false,
-            scrollTrigger: getScrollTriggerConfig(container, "top 88%"),
-          },
-        );
-      },
-    );
-
-    gsap.utils.toArray<HTMLElement>("[data-reveal-fade]").forEach((el) => {
-      gsap.fromTo(
-        el,
-        { opacity: 0, y: 12 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          ease: "power2.out",
-          immediateRender: false,
-          scrollTrigger: getScrollTriggerConfig(el, "top 92%"),
-        },
-      );
-    });
-  });
+  document.querySelectorAll<HTMLElement>("[data-conversion-word]").forEach(
+    (word, index) => {
+      word.style.setProperty("--reveal-delay", `${index * 35}ms`);
+    },
+  );
 }
 
 export default function ScrollRevealAnimations() {
   const pathname = usePathname();
   const reduceMotion = usePrefersReducedMotion();
 
-  useLayoutEffect(() => {
-    if (reduceMotion) return;
+  useEffect(() => {
+    setupStaggerDelays();
 
-    ensureGsapScroll();
-
-    let ctx: ReturnType<typeof createRevealAnimations> | null = null;
-
-    const mount = () => {
-      ctx?.revert();
-      ctx = createRevealAnimations();
-      requestAnimationFrame(() => ScrollTrigger.refresh());
-    };
-
-    const onReady = () => mount();
-
-    if (isScrollSystemReady()) {
-      mount();
+    if (reduceMotion) {
+      revealAll(document.querySelectorAll(REVEAL_SELECTORS));
+      revealAll(document.querySelectorAll("[data-reveal-item]"));
+      setupHeroReveals();
+      return;
     }
 
-    window.addEventListener("scroll-system-ready", onReady);
+    setupHeroReveals();
 
-    const replayAfterRestore = (event: PageTransitionEvent) => {
-      if (!event.persisted) return;
-      mount();
-    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
 
-    window.addEventListener("pageshow", replayAfterRestore);
+          const target = entry.target as HTMLElement;
 
-    return () => {
-      window.removeEventListener("scroll-system-ready", onReady);
-      window.removeEventListener("pageshow", replayAfterRestore);
-      ctx?.revert();
-    };
+          if (target.matches("[data-conversion-section]")) {
+            target.classList.add("is-revealed");
+            observer.unobserve(target);
+            return;
+          }
+
+          if (target.matches("[data-reveal-item]")) {
+            target.classList.add("is-revealed");
+            observer.unobserve(target);
+            return;
+          }
+
+          target.classList.add("is-revealed");
+          observer.unobserve(target);
+        });
+      },
+      { root: null, rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
+    );
+
+    document
+      .querySelectorAll<HTMLElement>(REVEAL_SELECTORS)
+      .forEach((el) => observer.observe(el));
+
+    document
+      .querySelectorAll<HTMLElement>("[data-reveal-item]")
+      .forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
   }, [pathname, reduceMotion]);
 
   return null;

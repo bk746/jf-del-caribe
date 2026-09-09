@@ -1,15 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useLayoutEffect, useRef } from "react";
-import {
-  ensureGsapScroll,
-  getScrollTriggerConfig,
-  gsap,
-  ScrollTrigger,
-} from "@/lib/gsap-client";
-import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { isScrollSystemReady } from "@/lib/scroll-ready";
 
 const PHRASE =
   "Solicite su presupuesto gratuito y arranque su obra en la Riviera Maya esta misma semana.";
@@ -21,75 +10,9 @@ function isHighlighted(word: string) {
 }
 
 export default function ConversionBridge() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const reduceMotion = usePrefersReducedMotion();
-
-  useLayoutEffect(() => {
-    if (reduceMotion) return;
-
-    ensureGsapScroll();
-
-    let ctx: gsap.Context | null = null;
-
-    const runAnimation = () => {
-      ctx?.revert();
-
-      ctx = gsap.context(() => {
-        gsap.set("[data-conversion-word]", { opacity: 0, yPercent: 110 });
-        gsap.set("[data-conversion-cta]", { opacity: 0, y: 12 });
-
-        const timeline = gsap.timeline({
-          scrollTrigger: getScrollTriggerConfig(sectionRef.current, "top 85%"),
-        });
-
-        timeline.to("[data-conversion-word]", {
-          yPercent: 0,
-          opacity: 1,
-          duration: 0.75,
-          stagger: 0.035,
-          ease: "power2.out",
-        });
-
-        timeline.to(
-          "[data-conversion-cta]",
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.65,
-            ease: "power2.out",
-          },
-          "-=0.35",
-        );
-      }, sectionRef);
-
-      requestAnimationFrame(() => ScrollTrigger.refresh());
-    };
-
-    const onReady = () => runAnimation();
-
-    if (isScrollSystemReady()) {
-      runAnimation();
-    }
-
-    window.addEventListener("scroll-system-ready", onReady);
-
-    const replayAfterRestore = (event: PageTransitionEvent) => {
-      if (!event.persisted) return;
-      runAnimation();
-    };
-
-    window.addEventListener("pageshow", replayAfterRestore);
-
-    return () => {
-      window.removeEventListener("scroll-system-ready", onReady);
-      window.removeEventListener("pageshow", replayAfterRestore);
-      ctx?.revert();
-    };
-  }, [reduceMotion]);
-
   return (
     <section
-      ref={sectionRef}
+      data-conversion-section
       aria-label="Mensaje de conversión"
       className="bg-white px-6 pt-16 pb-20 sm:px-8 sm:pt-20 sm:pb-24 md:pt-24 md:pb-28 lg:px-12 lg:pt-28 lg:pb-32"
     >
@@ -116,7 +39,7 @@ export default function ConversionBridge() {
         <Link
           data-conversion-cta
           href="/devis"
-          className="group mt-8 inline-flex min-h-11 items-center gap-2 rounded-full bg-orange-500 px-7 py-3.5 text-sm font-semibold text-white transition-all duration-200 ease-out hover:bg-orange-600 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 lg:hidden"
+          className="group mt-8 inline-flex min-h-11 items-center gap-2 rounded-full bg-orange-500 px-7 py-3.5 text-sm font-semibold text-white transition-colors duration-200 ease-out hover:bg-orange-600 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 lg:hidden"
         >
           Formulario de presupuesto completo
           <span

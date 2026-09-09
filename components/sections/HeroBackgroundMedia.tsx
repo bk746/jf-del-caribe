@@ -19,12 +19,28 @@ export default function HeroBackgroundMedia({
   enableVideo,
   playbackPaused = false,
 }: HeroBackgroundMediaProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoReady, setVideoReady] = useState(false);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const [isInView, setIsInView] = useState(true);
+  const [allowVideo, setAllowVideo] = useState(false);
 
   useEffect(() => {
     if (!enableVideo) return;
+
+    const mobileQuery = window.matchMedia("(max-width: 767px)");
+    const updateAllowVideo = () => {
+      setAllowVideo(!mobileQuery.matches);
+    };
+
+    updateAllowVideo();
+    mobileQuery.addEventListener("change", updateAllowVideo);
+    return () => mobileQuery.removeEventListener("change", updateAllowVideo);
+  }, [enableVideo]);
+
+  useEffect(() => {
+    if (!enableVideo || !allowVideo) return;
 
     const loadVideo = () => setShouldLoadVideo(true);
 
@@ -35,7 +51,20 @@ export default function HeroBackgroundMedia({
 
     const timer = setTimeout(loadVideo, VIDEO_LOAD_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [enableVideo]);
+  }, [allowVideo, enableVideo]);
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInView(entry.isIntersecting),
+      { threshold: 0.12 },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!enableVideo || !shouldLoadVideo) return;
@@ -44,7 +73,7 @@ export default function HeroBackgroundMedia({
     if (!video) return;
 
     const syncPlayback = () => {
-      if (playbackPaused || document.hidden) {
+      if (playbackPaused || document.hidden || !isInView) {
         video.pause();
         return;
       }
@@ -54,10 +83,10 @@ export default function HeroBackgroundMedia({
     syncPlayback();
     document.addEventListener("visibilitychange", syncPlayback);
     return () => document.removeEventListener("visibilitychange", syncPlayback);
-  }, [enableVideo, playbackPaused, shouldLoadVideo]);
+  }, [enableVideo, isInView, playbackPaused, shouldLoadVideo]);
 
   return (
-    <div className="relative h-full w-full bg-[#1a1a1a]">
+    <div ref={containerRef} className="relative h-full w-full bg-[#1a1a1a]">
       <Image
         src={poster}
         alt=""
@@ -68,7 +97,7 @@ export default function HeroBackgroundMedia({
         aria-hidden
       />
 
-      {enableVideo && shouldLoadVideo ? (
+      {enableVideo && allowVideo && shouldLoadVideo ? (
         <video
           ref={videoRef}
           autoPlay
@@ -80,7 +109,7 @@ export default function HeroBackgroundMedia({
           onCanPlay={() => setVideoReady(true)}
           onPlaying={() => setVideoReady(true)}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-out motion-reduce:transition-none ${
-            videoReady && !playbackPaused ? "opacity-100" : "opacity-0"
+            videoReady && !playbackPaused && isInView ? "opacity-100" : "opacity-0"
           }`}
           aria-hidden
         >

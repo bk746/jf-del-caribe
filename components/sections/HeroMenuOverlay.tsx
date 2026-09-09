@@ -120,7 +120,7 @@ export default function HeroMenuOverlay({
   return createPortal(
     <div
       ref={panelRef}
-      className="fixed inset-x-0 top-0 z-[9998] max-h-[100dvh] w-full overflow-y-auto bg-white will-change-transform"
+      className="fixed inset-x-0 top-0 z-[9998] max-h-[100dvh] w-full overflow-y-auto bg-white"
       role="dialog"
       aria-modal="true"
       aria-hidden={!isOpen}

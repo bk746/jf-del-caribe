@@ -26,7 +26,7 @@ export default function ServicesSection() {
           src={vectorBg}
           alt=""
           fill
-          className="origin-center rotate-90 object-contain object-left-top opacity-90 [mix-blend-mode:lighten]"
+          className="origin-center rotate-90 object-contain object-left-top opacity-[0.35]"
           sizes="(max-width: 1024px) 768px, 960px"
         />
       </div>
@@ -39,7 +39,7 @@ export default function ServicesSection() {
           src={vectorBg}
           alt=""
           fill
-          className="origin-center rotate-90 object-contain object-right-bottom opacity-90 [mix-blend-mode:lighten]"
+          className="origin-center rotate-90 object-contain object-right-bottom opacity-[0.35]"
           sizes="(max-width: 1024px) 768px, 960px"
         />
       </div>
